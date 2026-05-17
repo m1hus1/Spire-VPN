@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spire VPN</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #060b13;
+            --bg-card: rgba(14, 26, 43, 0.7);
+            --neon-blue: #40c4ff;
+            --neon-glow: rgba(64, 196, 255, 0.4);
+            --text-main: #ffffff;
+            --text-muted: #7a8b9e;
+            --ping-green: #00e676;
+            --ping-orange: #ff9100;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at top, #0c1f38 0%, var(--bg-dark) 70%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Логотип в круге с неоновой подсветкой */
+        .logo-container {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: #091322;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-glow), inset 0 0 15px var(--neon-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .logo-container img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #ffffff 0%, #b0d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--neon-blue);
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin: 5px 0 20px 0;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            background: rgba(0, 230, 118, 0.15);
+            border: 1px solid var(--ping-green);
+            color: var(--ping-green);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 35px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: var(--ping-green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--ping-green);
+        }
+
+        /* Главная кнопка получения ключа */
+        .main-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid var(--neon-blue);
+            border-radius: 16px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(42, 82, 152, 0.4), 0 0 10px var(--neon-glow);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .main-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* Выпадающий список серверов */
+        .server-list {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+            max-height: 380px;
+            overflow-y: auto; /* Добавляет скролл, если серверов много */
+            padding-right: 4px;
+            animation: slideDown 0.4s ease forwards;
+        }
+
+        /* Стилизация скроллбара для Mini App */
+        .server-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .server-list::-webkit-scrollbar-thumb {
+            background: var(--neon-blue);
+            border-radius: 4px;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .server-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(64, 196, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .server-card:hover {
+            border-color: var(--neon-blue);
+            background: rgba(14, 26, 43, 0.9);
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .flag { font-size: 22px; }
+        .country { font-weight: 600; font-size: 14px; text-align: left; }
+        .ping { font-family: monospace; font-size: 12px; font-weight: bold; }
+        .ping.good { color: var(--ping-green); }
+        .ping.medium { color: var(--ping-orange); }
+
+        /* Блок преимуществ */
+        .features-block {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        .features-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature-item:last-child { margin-bottom: 0; }
+
+        .feature-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(64, 196, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--neon-blue);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .feature-text h3 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .feature-text p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-container">
+        <img src="https://i.ibb.co/VWV3f7G/1446.png" alt="Spire Logo">
+    </div>
+
+    <h1>Spire</h1>
+    <div class="subtitle">Premium Vless Access</div>
+
+    <div class="status-badge">СЕРВЕР: ONLINE</div>
+
+    <button class="main-btn" id="main-action-btn" onclick="toggleServers()">
+        ⚡ Get Your Key
+    </button>
+
+    <div class="server-list" id="servers-box">
+        <div class="server-card" onclick="copyKey('de_1')">
+            <div class="server-info">
+                <span class="flag">🇩🇪</span>
+                <span class="country">Germany #1 (Frankfurt)</span>
+            </div>
+            <span class="ping good">28ms</span>
+        </div>
+        <div class="server-card" onclick="copyKey('de_2')">
+            <div class="server-info">
+                <span class="flag">🇩🇪</span>
+                <span class="country">Germany #2 (Berlin)</span>
+            </div>
+            <span class="ping good">35ms</span>
+        </div>
+        <div class="server-card" onclick="copyKey('de_3')">
+            <div class="server-info">
+                <span class="flag">🇩🇪</span>
+                <span class="country">Germany #3 (Munich)</span>
+            </div>
+            <span class="ping good">39ms</span>
+        </div>
+
+        <div class="server-card" onclick="copyKey('nl_1')">
+            <div class="server-info">
+                <span class="flag">🇳🇱</span>
+                <span class="country">Netherlands #1 (Amsterdam)</span>
+            </div>
+            <span class="ping good">42ms</span>
+        </div>
+        <div class="server-card" onclick="copyKey('nl_2')">
+            <div class="server-info">
+                <span class="flag">🇳🇱</span>
+                <span class="country">Netherlands #2 (Rotterdam)</span>
+            </div>
+            <span class="ping good">46ms</span>
+        </div>
+        <div class="server-card" onclick="copyKey('nl_3')">
+            <div class="server-info">
+                <span class="flag">🇳🇱</span>
+                <span class="country">Netherlands #3 (Eindhoven)</span>
+            </div>
+            <span class="ping good">49ms</span>
+        </div>
+
+        <div class="server-card" onclick="copyKey('us_1')">
+            <div class="server-info">
+                <span class="flag">🇺🇸</span>
+                <span class="country">USA #1 (New York)</span>
+            </div>
+            <span class="ping medium">95ms</span>
+        </div>
+        <div class="server-card" onclick="copyKey('us_2')">
+            <div class="server-info">
+                <span class="flag">🇺🇸</span>
+                <span class="country">USA #2 (Washington)</span>
+            </div>
+            <span class="ping medium">105ms</span>
+        </div>
+        <div class="server-card" onclick="copyKey('us_3')">
+            <div class="server-info">
+                <span class="flag">🇺🇸</span>
+                <span class="country">USA #3 (Miami)</span>
+            </div>
+            <span class="ping medium">120ms</span>
+        </div>
+    </div>
+
+    <div class="features-block">
+        <div class="features-title">
+            <span>🛡️</span> WHY SPIRE?
+        </div>
+        
+        <div class="feature-item">
+            <div class="feature-icon">🚀</div>
+            <div class="feature-text">
+                <h3>VLESS + REALITY</h3>
+                <p>Новейший протокол без детектирования. Обходит любые типы блокировок провайдеров.</p>
+            </div>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-text">
+                <h3>Max Speed</h3>
+                <p>Без ограничений трафика. Стриминг в 4K, онлайн-игры, торренты — всё летает!</p>
+            </div>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon">🔒</div>
+            <div class="feature-text">
+                <h3>Full Privacy</h3>
+                <p>Никаких логов вашей активности. Полная анонимность и шифрование данных.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // 9 индивидуальных конфигураций под каждый сервер
+    const vlessKeys = {
+        de_1: "vless://321a7160-a4f8-4448-b952-a6997b5c2fa9@82.21.114.54:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=de1.kosmosapp.ru&fp=qq&pbk=r77nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux58dzI&sid=d0a1665d1b96515e&type=tcp#SpireVPN-Germany-1",
+        de_2: "vless://7c9bc441-df13-4903-82b1-6a12b7bc5da9@46.229.212.15:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=de2.kosmosapp.ru&fp=chrome&pbk=w32nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux99dzI&sid=e1d2c3b4a5f67890&type=tcp#SpireVPN-Germany-2",
+        de_3: "vless://f47ac10b-58cc-4372-a567-0e02b2c3d4e5@185.190.140.4:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=de3.kosmosapp.ru&fp=firefox&pbk=q11nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux22dzI&sid=fedcba9876543210&type=tcp#SpireVPN-Germany-3",
+        
+        nl_1: "vless://e1b45c32-b12a-4a7b-99c3-c5897b5c2fa9@213.244.35.88:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=nl1.kosmosapp.ru&fp=chrome&pbk=x98nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux42dzI&sid=a1b2c3d4e5f67890&type=tcp#SpireVPN-Netherlands-1",
+        nl_2: "vless://55a12b88-142c-4b3d-88f1-c9997b5c2fa9@45.138.156.21:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=nl2.kosmosapp.ru&fp=safari&pbk=m44nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux66dzI&sid=bcda1234567890ef&type=tcp#SpireVPN-Netherlands-2",
+        nl_3: "vless://a1c2e3f4-1234-5678-9101-b1117b5c2fa9@194.104.12.99:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=nl3.kosmosapp.ru&fp=edge&pbk=k22nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux11dzI&sid=0987123456abcdef&type=tcp#SpireVPN-Netherlands-3",
+        
+        us_1: "vless://a8f34211-c90a-4122-b541-b8897b5c2fa9@142.250.74.46:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=us1.kosmosapp.ru&fp=edge&pbk=z55nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux11dzI&sid=0987654321fedcba&type=tcp#SpireVPN-USA-1",
+        us_2: "vless://99b342cc-012a-4b61-9f12-c7777b5c2fa9@104.16.124.9:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=us2.kosmosapp.ru&fp=chrome&pbk=h77nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux88dzI&sid=1234567890abcdef&type=tcp#SpireVPN-USA-2",
+        us_3: "vless://33f441aa-8812-4c2d-b001-f5557b5c2fa9@64.233.165.101:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=us3.kosmosapp.ru&fp=safari&pbk=t33nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux44dzI&sid=9876543210abcdef&type=tcp#SpireVPN-USA-3"
+    };
+
+    function toggleServers() {
+        const serverList = document.getElementById('servers-box');
+        const mainBtn = document.getElementById('main-action-btn');
+        
+        if (serverList.style.display === 'flex') {
+            serverList.style.display = 'none';
+            mainBtn.innerHTML = '⚡ Get Your Key';
+        } else {
+            serverList.style.display = 'flex';
+            mainBtn.innerHTML = '❌ Close Servers';
+            
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+    }
+
+    function copyKey(serverCode) {
+        const fullKey = vlessKeys[serverCode];
+        let serverName = "";
+
+        // Определяем понятное имя для уведомления
+        if(serverCode === 'de_1') serverName = "Германия #1";
+        if(serverCode === 'de_2') serverName = "Германия #2";
+        if(serverCode === 'de_3') serverName = "Германия #3";
+        if(serverCode === 'nl_1') serverName = "Нидерланды #1";
+        if(serverCode === 'nl_2') serverName = "Нидерланды #2";
+        if(serverCode === 'nl_3') serverName = "Нидерланды #3";
+        if(serverCode === 'us_1') serverName = "США #1";
+        if(serverCode === 'us_2') serverName = "США #2";
+        if(serverCode === 'us_3') serverName = "США #3";
+
+        // Копирование ключа в буфер
+        navigator.clipboard.writeText(fullKey).then(() => {
+            alert(`Ключ для сервера ${serverName} успешно скопирован!`);
+            
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+            
+            // Отправляем информацию в чат боту и закрываем окно
+            tg.sendData("Скопирован ключ: " + serverName);
+            tg.close();
+        });
+    }
+</script>

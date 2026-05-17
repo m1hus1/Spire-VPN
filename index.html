@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spire VPN</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --container-bg: #1f2833;
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff007f;
+            --text-color: #c5c6c7;
+            --ping-good: #39ff14;
+            --ping-medium: #ffb703;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            padding: 20px 15px;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 32px;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--neon-blue);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+        }
+
+        .server-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .server-card {
+            background: rgba(31, 40, 51, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .server-card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .server-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .flag {
+            font-size: 24px;
+        }
+
+        .country-name {
+            font-weight: bold;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .ping {
+            font-size: 13px;
+            font-weight: bold;
+            font-family: monospace;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .ping.good {
+            color: var(--ping-good);
+            text-shadow: 0 0 5px rgba(57, 255, 20, 0.5);
+        }
+
+        .ping.medium {
+            color: var(--ping-medium);
+            text-shadow: 0 0 5px rgba(255, 183, 3, 0.5);
+        }
+
+        .key-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            color: #fff;
+            border: 1px solid var(--neon-pink);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 5px rgba(255, 0, 127, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .key-btn:active {
+            background: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            text-shadow: 0 0 5px #fff;
+        }
+
+        .key-box {
+            display: none;
+            background: #050508;
+            padding: 10px;
+            border-radius: 6px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 11px;
+            color: #8f9aa6;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            text-align: left;
+            user-select: all;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Spire VPN</h1>
+    <div class="subtitle">Select a key from servers</div>
+
+    <div class="server-list">
+        <div class="server-card">
+            <div class="server-info">
+                <div class="server-meta">
+                    <span class="flag">🇩🇪</span>
+                    <span class="country-name">Germany (Frankfurt)</span>
+                </div>
+                <span class="ping good">PING: 32ms</span>
+            </div>
+            <button class="key-btn" onclick="toggleKey(this, 'key-de')">🔑 Получить ключ</button>
+            <div id="key-de" class="key-box">vless://321a7160-a4f8-4448-b952-a6997b5c2fa9@82.21.114.54:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=de.kosmosapp.ru&fp=qq&pbk=r77nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux58dzI&sid=d0a1665d1b96515e&type=tcp#SpireVPN-Germany</div>
+        </div>
+
+        <div class="server-card">
+            <div class="server-info">
+                <div class="server-meta">
+                    <span class="flag">🇳🇱</span>
+                    <span class="country-name">Netherlands (Amsterdam)</span>
+                </div>
+                <span class="ping good">PING: 45ms</span>
+            </div>
+            <button class="key-btn" onclick="toggleKey(this, 'key-nl')">🔑 Получить ключ</button>
+            <div id="key-nl" class="key-box">vless://321a7160-a4f8-4448-b952-a6997b5c2fa9@82.21.114.54:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=de.kosmosapp.ru&fp=qq&pbk=r77nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux58dzI&sid=d0a1665d1b96515e&type=tcp#SpireVPN-Netherlands</div>
+        </div>
+
+        <div class="server-card">
+            <div class="server-info">
+                <div class="server-meta">
+                    <span class="flag">🇬🇧</span>
+                    <span class="country-name">United Kingdom (London)</span>
+                </div>
+                <span class="ping good">PING: 61ms</span>
+            </div>
+            <button class="key-btn" onclick="toggleKey(this, 'key-uk')">🔑 Получить ключ</button>
+            <div id="key-uk" class="key-box">vless://321a7160-a4f8-4448-b952-a6997b5c2fa9@82.21.114.54:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=de.kosmosapp.ru&fp=qq&pbk=r77nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux58dzI&sid=d0a1665d1b96515e&type=tcp#SpireVPN-UK</div>
+        </div>
+
+        <div class="server-card">
+            <div class="server-info">
+                <div class="server-meta">
+                    <span class="flag">🇺🇸</span>
+                    <span class="country-name">USA (New York)</span>
+                </div>
+                <span class="ping medium">PING: 98ms</span>
+            </div>
+            <button class="key-btn" onclick="toggleKey(this, 'key-us')">🔑 Получить ключ</button>
+            <div id="key-us" class="key-box">vless://321a7160-a4f8-4448-b952-a6997b5c2fa9@82.21.114.54:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=de.kosmosapp.ru&fp=qq&pbk=r77nilacD34SeLmghmchRKuNiUL0xzh-pK87Ux58dzI&sid=d0a1665d1b96515e&type=tcp#SpireVPN-USA</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Инициализация Telegram Web App
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    function toggleKey(btn, keyId) {
+        const keyBox = document.getElementById(keyId);
+        
+        // Закрываем другие открытые ключи для чистоты интерфейса
+        document.querySelectorAll('.key-box').forEach(box => {
+            if(box.id !== keyId) box.style.display = 'none';
+        });
+        document.querySelectorAll('.key-btn').forEach(b => {
+            if(b !== btn) b.innerText = '🔑 Получить ключ';
+        });
+
+        // Переключаем текущий ключ
+        if (keyBox.style.display === 'block') {
+            keyBox.style.display = 'none';
+            btn.innerText = '🔑 Получить ключ';
+        } else {
+            keyBox.style.display = 'block';
+            btn.innerText = '📋 Скопировать ключ';
+            
+            // Копируем в буфер обмена
+            navigator.clipboard.writeText(keyBox.innerText);
+
+            // Вызываем тактильный отклик смартфона
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+    }
+</script>
+</body>
+</html>
